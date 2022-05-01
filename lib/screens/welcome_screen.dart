@@ -1,48 +1,98 @@
 import 'package:flash_chat_flutter_firebase/screens/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'registration_screen.dart';
-
+import 'package:flash_chat_flutter_firebase/components/rounded_button.dart';
 class WelcomeScreen extends StatefulWidget {
   static const String id = 'welcome_screen';
   @override
   _WelcomeScreenState createState() => _WelcomeScreenState();
 }
 
-class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProviderStateMixin{
+class _WelcomeScreenState extends State<WelcomeScreen>
+    with TickerProviderStateMixin {
   AnimationController? controller;
+  AnimationController? controller1;
+  Animation? animation;
+  Animation? animation2;
+
+  // void update() {
+  //   controller = AnimationController(
+  //     duration: const Duration(seconds: 1),
+  //     vsync: this,
+  //   );
+  //   controller?.forward();
+  //   controller?.addListener(
+  //     () {
+  //       setState(() {});
+  //       print(controller?.value);
+  //     },
+  //   );
+  // }
+
+  void update() {
+    controller = AnimationController(
+      duration: const Duration(seconds: 1),
+      vsync: this,
+    );
+
+    controller?.forward();
+    animation =
+        ColorTween(begin: Colors.blueGrey, end: Colors.white).animate(controller!);
+
+    animation2 =  CurvedAnimation(parent: controller!, curve: Curves.easeInCirc);
+
+    controller?.addListener(
+      () {
+        setState(() {});
+        print(animation?.value);
+        print(animation2?.value);
+      },
+    );
+  }
+
+  void update1() {
+    controller1 = AnimationController(
+      duration: const Duration(seconds: 1),
+      vsync: this,
+      upperBound: 100,
+    );
+    controller1?.forward();
+    controller1?.addListener(
+      () {
+        setState(() {});
+        print(controller1?.value);
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    controller?.dispose();
+    controller1?.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
     super.initState();
-     controller = AnimationController(
-      duration: const Duration(seconds: 1),
-        vsync: this,
-    );
-    controller?.forward();
-    controller?.addListener(()
-    {
-      setState(() {
-
-      });
-      print(controller?.value);
-    },
-    );
-
-    // AnimationController controller = AnimationController(
-    //   duration: const Duration(seconds: 1),
-    //     vsync: this,
-    // );
-    // controller.forward();
-    // controller.addListener(()
-    // {
-    //   print(controller.value);
-    // },
-    // );
+    update();
+    update1();
   }
+  // AnimationController controller = AnimationController(
+  //   duration: const Duration(seconds: 1),
+  //     vsync: this,
+  // );
+  // controller.forward();
+  // controller.addListener(()
+  // {
+  //   print(controller.value);
+  // },
+  // );
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.red.withOpacity(controller!.value),
+      backgroundColor: animation?.value,
       body: Padding(
         padding: EdgeInsets.symmetric(horizontal: 24.0),
         child: Column(
@@ -55,7 +105,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                   tag: 'logo',
                   child: Container(
                     child: Image.asset('images/logo.png'),
-                    height: 60.0,
+                    height: animation2!.value*100,
                   ),
                 ),
                 Text(
@@ -70,38 +120,22 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
             SizedBox(
               height: 48.0,
             ),
-            Padding(
-              padding: EdgeInsets.symmetric(vertical: 16.0),
-              child: Material(
-                elevation: 5.0,
-                color: Colors.lightBlueAccent,
-                borderRadius: BorderRadius.circular(30.0),
-                child: MaterialButton(
-                  onPressed: () {
-                    Navigator.pushNamed(context, LoginScreen.id);
-                  },
-                  minWidth: 200.0,
-                  height: 42.0,
-                  child: Text(
-                    'Log In',
-                  ),
-                ),
-              ),
+            RoundButton(color:Colors.blueAccent,title:'log in',onPressed: (){
+              Navigator.pushNamed(context, LoginScreen.id);
+            }),
+            RoundButton(color:Colors.blueAccent,title:'Registration',onPressed: (){
+              Navigator.pushNamed(context, RegistrationScreen.id);
+            }),
+            SizedBox(
+              height: 48.0,
             ),
-            Padding(
-              padding: EdgeInsets.symmetric(vertical: 16.0),
-              child: Material(
-                color: Colors.blueAccent,
-                borderRadius: BorderRadius.circular(30.0),
-                elevation: 5.0,
-                child: MaterialButton(
-                  onPressed: () {
-                    Navigator.pushNamed(context, RegistrationScreen.id);
-                  },
-                  minWidth: 200.0,
-                  height: 42.0,
-                  child: Text(
-                    'Register',
+            Container(
+              child: Center(
+                child: Text(
+                  'Loading : ${controller1!.value.toInt()}%',
+                  style: TextStyle(
+                    fontSize: 20.0,
+                    fontWeight: FontWeight.w900,
                   ),
                 ),
               ),
