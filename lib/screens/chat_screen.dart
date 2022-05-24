@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flash_chat_flutter_firebase/constants.dart';
 
 final _firestore = FirebaseFirestore.instance;
+User? loggedInUser;
 class ChatScreen extends StatefulWidget {
   static const String id = 'chat_screen';
   @override
@@ -60,9 +61,9 @@ class _ChatScreenState extends State<ChatScreen> {
           IconButton(
               icon: Icon(Icons.close),
               onPressed: () {
-                // _auth.signOut();
-                // Navigator.pop(context);
-                getMessages();
+                _auth.signOut();
+                Navigator.pop(context);
+
               }),
         ],
         title: Text('⚡️Chat'),
@@ -91,8 +92,8 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
                   FlatButton(
                     onPressed: () {
-                      //messageText + loggedInUser
                       messageTextController.clear();
+                      //messageText + loggedInUser
                       _firestore.collection('messages').add({
                         'text' : messageText,
                         'sender': loggedInUser?.email,
@@ -129,13 +130,19 @@ class MessagesStream extends StatelessWidget {
             ),
           );
         }
-        final messages = snapshot.data!.docs;
+        final messages = snapshot.data!.docs.reversed;
         List<MessageBubble> messageWidgets = [];
         for (var message in messages) {
           final messageText = message.data()['text'];
           final messageSender = message.data()['sender'];
 
-          final messageWidget = MessageBubble(text: messageText,sender: messageSender);
+          final currentUser = loggedInUser?.email;
+
+          if(currentUser == messageSender){
+
+          }
+
+          final messageWidget = MessageBubble(text: messageText,sender: messageSender ,isMe: currentUser==messageSender,);
 
           messageWidgets.add(messageWidget);
         }
@@ -154,7 +161,8 @@ class MessagesStream extends StatelessWidget {
 class MessageBubble extends StatefulWidget {
   final String? sender;
   final String? text;
-  const MessageBubble({Key? key, this.text,this.sender}) : super(key: key);
+  final bool? isMe;
+  const MessageBubble({Key? key, this.text,this.sender, this.isMe}) : super(key: key);
 
   @override
   State<MessageBubble> createState() => _MessageBubbleState();
@@ -168,7 +176,7 @@ class _MessageBubbleState extends State<MessageBubble> {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
+        crossAxisAlignment: widget.isMe! ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: <Widget>[
           Text('${widget.sender}',
           style: const TextStyle(
@@ -176,15 +184,15 @@ class _MessageBubbleState extends State<MessageBubble> {
             color: Colors.black54,
           ),),
          Material(
-          borderRadius: BorderRadius.circular(50.0),
+          borderRadius: widget.isMe! ?const BorderRadius.only(topLeft: Radius.circular(30.0),bottomLeft:Radius.circular(30.0), bottomRight:Radius.circular(30.0)   ):BorderRadius.only(topRight: Radius.circular(30.0),bottomLeft:Radius.circular(30.0), bottomRight:Radius.circular(30.0)   ),
           elevation:5.0, //Drop Shadow to each text
-          color: Colors.lightBlueAccent,
+          color: widget.isMe! ? Colors.lightBlueAccent : Colors.white,
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
             child: Text(
               '${widget.text}',
               style: TextStyle(
-                color: Colors.white,
+                color: widget.isMe! ? Colors.white : Colors.black54  ,
                 fontSize: 15.0,
               ),
             ),
